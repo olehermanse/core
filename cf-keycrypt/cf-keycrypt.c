@@ -90,19 +90,25 @@ int file_exist(char *filename)
 
 char *get_host_pubkey(char *host)
 {
-    char *key;
-    char value[BUFSIZE];
+    // char *key;                            // TODO: this was unused(!)
+    // char value[BUFSIZE];                  // TODO: this was unused(!)
     char *buffer = (char *) malloc(BUFSIZE *sizeof(char));
     //char *keyname = NULL;
     char hash[CF_HOSTKEY_STRING_SIZE];
     //char buffer[BUFSIZE];
     char ipaddress[BUFSIZE];
-    int ecode;
+    // int ecode;                            // TODO: this was unused(!)
     struct addrinfo *result;
     struct addrinfo *res;
     bool found;
 
-    int error = getaddrinfo(host,NULL,NULL,&result);
+    int error = getaddrinfo(host, NULL, NULL, &result);
+    if (error != 0)
+    {
+        Log(LOG_LEVEL_ERR, "Failed to get IP from host (getaddrinfo: %s)",
+            gai_strerror(error));
+        return NULL;
+    }
 
     for(res = result; res != NULL && !found; res = res->ai_next)
     {
@@ -185,7 +191,7 @@ void *readpubkey(char *pubfile)
 long int rsa_encrypt(char *pubfile, char *filein, char *fileout)
 {
     int ks = 0;
-    unsigned long size = 0, len = 0, ciphsz = 0;
+    unsigned long size = 0, ciphsz = 0; // len = 0; TODO: Unused variable
     RSA* key = NULL;
     FILE *infile = NULL;
     FILE *outfile = NULL;
@@ -227,7 +233,8 @@ long int rsa_encrypt(char *pubfile, char *filein, char *fileout)
     {
         memset(tmpplain, '\0', ks);
         memset(tmpciph, '\0', ks);
-        len = fread(tmpplain, 1, ks-RSA_PKCS1_PADDING_SIZE, infile);
+        // len = // TODO: Unused variable
+        fread(tmpplain, 1, ks-RSA_PKCS1_PADDING_SIZE, infile);
         if ((size = RSA_public_encrypt(strlen(tmpplain), tmpplain, tmpciph, key, RSA_PKCS1_PADDING)) == -1)
         {
             fprintf(stderr, "%s\n", ERR_error_string(ERR_get_error(), NULL));
