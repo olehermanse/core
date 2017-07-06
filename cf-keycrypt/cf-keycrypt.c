@@ -191,7 +191,7 @@ void *readpubkey(char *pubfile)
 long int rsa_encrypt(char *pubfile, char *filein, char *fileout)
 {
     int ks = 0;
-    unsigned long size = 0, ciphsz = 0; // len = 0; TODO: Unused variable
+    unsigned long size = 0, len = 0, ciphsz = 0;
     RSA* key = NULL;
     FILE *infile = NULL;
     FILE *outfile = NULL;
@@ -233,8 +233,12 @@ long int rsa_encrypt(char *pubfile, char *filein, char *fileout)
     {
         memset(tmpplain, '\0', ks);
         memset(tmpciph, '\0', ks);
-        // len = // TODO: Unused variable
-        fread(tmpplain, 1, ks-RSA_PKCS1_PADDING_SIZE, infile);
+        len = fread(tmpplain, 1, ks-RSA_PKCS1_PADDING_SIZE, infile);
+        if (len <= 0)
+        {
+            Log(LOG_LEVEL_ERR, "Could not read file '%s'(fread: %lu)",
+                filein, len);
+        }
         if ((size = RSA_public_encrypt(strlen(tmpplain), tmpplain, tmpciph, key, RSA_PKCS1_PADDING)) == -1)
         {
             fprintf(stderr, "%s\n", ERR_error_string(ERR_get_error(), NULL));
