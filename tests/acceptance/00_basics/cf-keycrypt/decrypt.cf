@@ -5,25 +5,11 @@ body common control
       version => "1.0";
 }
 
-bundle agent init
-{
-  methods:
-    "any" usebundle => dcs_fini("$(G.testfile).plain");
-    "any" usebundle => dcs_fini("$(G.testfile).encrypted");
-    "any" usebundle => dcs_fini("$(G.testfile).decrypted");
-    "any" usebundle => generate_key;
-    "any" usebundle => trust_key;
-}
-
 bundle agent test
 {
   meta:
     "description"
       string => "Test that cf-keycrypt can still decrypt content encrypted at the time of initial implementation";
-
-
-  vars:
-      "text" string => "This secret sauce should be encrypted and decrypted.";
 
   commands:
       "$(sys.cf_keycrypt)"

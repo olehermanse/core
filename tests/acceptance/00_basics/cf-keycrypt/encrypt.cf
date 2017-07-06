@@ -5,16 +5,6 @@ body common control
       version => "1.0";
 }
 
-bundle agent init
-{
-  methods:
-    "any" usebundle => dcs_fini("$(G.testfile).plain");
-    "any" usebundle => dcs_fini("$(G.testfile).encrypted");
-    "any" usebundle => dcs_fini("$(G.testfile).decrypted");
-    "any" usebundle => generate_key;
-    "any" usebundle => trust_key;
-}
-
 bundle agent test
 {
   meta:
@@ -24,14 +14,10 @@ bundle agent test
 
       # if this breaks then something may have changed with supported key types (this was originally introduced in 3.11.0).
 
-
-  vars:
-      "text" string => "This secret sauce should be encrypted and decrypted.";
-
-
   commands:
       "$(sys.cf_keycrypt)"
         args => "-e $(this.promise_dirname)/testkey.pub -i $(this.promise_dirname)/plaintext -o $(G.testfile)";
+}
 
 bundle agent check
 {
