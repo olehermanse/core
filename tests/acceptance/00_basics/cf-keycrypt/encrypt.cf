@@ -28,21 +28,16 @@ bundle agent test
   vars:
       "text" string => "This secret sauce should be encrypted and decrypted.";
 
-  files:
-      "$(G.testfile).plain"
-        create => "true",
-        edit_defaults => empty,
-        edit_line => insert_lines( "$(text)" );
 
   commands:
       "$(sys.cf_keycrypt)"
-        args => "-e $(this.promise_dirname)/testkey.pub -i $(this.promise_dirname)/plaintext -o $(G.testfile).encrypted";
+        args => "-e $(this.promise_dirname)/testkey.pub -i $(this.promise_dirname)/plaintext -o $(G.testfile)";
 
 bundle agent check
 {
   methods:
       "any"
-        usebundle => dcs_check_diff("$(this.promise_dirname)/plaintext",
-                                    "$(G.testfile).encrypted",
+        usebundle => dcs_check_diff("$(this.promise_dirname)/encrypted",
+                                    "$(G.testfile)",
                                     "$(this.promise_filename)");
 }
