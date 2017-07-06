@@ -100,7 +100,7 @@ char *get_host_pubkey(char *host)
     // int ecode;                            // TODO: this was unused(!)
     struct addrinfo *result;
     struct addrinfo *res;
-    bool found;
+    bool found = false;
 
     int error = getaddrinfo(host, NULL, NULL, &result);
     if (error != 0)
