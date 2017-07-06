@@ -5,6 +5,16 @@ body common control
       version => "1.0";
 }
 
+bundle agent init
+{
+  methods:
+    "any" usebundle => dcs_fini("$(G.testfile).plain");
+    "any" usebundle => dcs_fini("$(G.testfile).encrypted");
+    "any" usebundle => dcs_fini("$(G.testfile).decrypted");
+    "any" usebundle => generate_key;
+    "any" usebundle => trust_key;
+}
+
 bundle agent test
 {
   meta:
@@ -19,18 +29,25 @@ bundle agent test
       "$(G.testfile).plain"
         create => "true",
         edit_defaults => empty,
-        edit_line => insert_lines( $(text) );
+        edit_line => insert_lines( "$(text)" );
 
   commands:
-
-      "$(cf_keycrypt) -e $(sys.workdir)ppkeys/localhost.pub -i $(G.testfile).plain -o $(G.testfile).cfcrypt";
-      "$(cf_keycrypt) -d $(sys.workdir)/ppkeys/localhost.priv -i $(G.testfile).cfcrypt -o $(G.testfiles).decrypted";
-
+      "$(sys.cf_keycrypt)"
+        args => "-e $(sys.workdir)/ppkeys/localhost.pub -i $(G.testfile).plain -o $(G.testfile).encrypted";
+      "$(sys.cf_keycrypt)"
+        args => "-d $(sys.workdir)/ppkeys/localhost.priv -i $(G.testfile).encrypted -o $(G.testfile).decrypted";
+  reports:
+      "Binaries/folders:";
+      "$(sys.cf_keycrypt)";
+      "$(sys.cf_agent)";
+      "$(sys.workdir)";
 }
 
 bundle agent check
 {
   methods:
-      "Check diff"
-        usebundle => dcs_check_diff( "$(G.testfile).plain", "$(G.testfile).decrypted" );
+      "any"
+        usebundle => dcs_check_diff("$(G.testfile).plain",
+                                    "$(G.testfile).decrypted",
+                                    "$(this.promise_filename)");
 }
