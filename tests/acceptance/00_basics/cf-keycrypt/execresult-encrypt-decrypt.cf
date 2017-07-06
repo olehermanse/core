@@ -1,0 +1,36 @@
+body common control
+{
+      inputs => { "../../default.cf.sub" };
+      bundlesequence => { default("$(this.promise_filename)") };
+      version => "1.0";
+}
+
+bundle agent test
+{
+  meta:
+    "description"
+      string => "Test that cf-keycrypt basic key based encryption and decryption work";
+
+
+  vars:
+      "text" string => "This secret sauce should be encrypted and decrypted.";
+
+  files:
+      "$(G.testfile).plain"
+        create => "true",
+        edit_defaults => empty,
+        edit_line => insert_lines( $(text) );
+
+  commands:
+
+      "$(cf_keycrypt) -e $(sys.workdir)ppkeys/localhost.pub -i $(G.testfile).plain -o $(G.testfile).cfcrypt";
+      "$(cf_keycrypt) -d $(sys.workdir)/ppkeys/localhost.priv -i $(G.testfile).cfcrypt -o $(G.testfiles).decrypted";
+
+}
+
+bundle agent check
+{
+  methods:
+      "Check diff"
+        usebundle => dcs_check_diff( "$(G.testfile).plain", "$(G.testfile).decrypted" );
+}
