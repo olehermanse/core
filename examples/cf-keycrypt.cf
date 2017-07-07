@@ -46,7 +46,6 @@ bundle agent main
 
       "Decrypted content:$(const.n)$(secret)";
 }
-#+end_src
 
 body printfile cat(file)
 # @brief Report the contents of a file
@@ -55,6 +54,7 @@ body printfile cat(file)
         file_to_print => "$(file)";
         number_of_lines => "inf";
 }
+#+end_src
 
 ###############################################################################
 #+begin_src example_output
