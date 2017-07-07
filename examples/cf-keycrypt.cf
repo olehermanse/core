@@ -20,10 +20,6 @@
 # (COSL) may apply to this file if you as a licensee so wish it. See
 # included file COSL.txt.
 
-#+begin_src prep
-#@ ```
-#@ ```
-#+end_src
 ###############################################################################
 #+begin_src cfengine3
 bundle agent main
@@ -57,7 +53,7 @@ body printfile cat(file)
 #+end_src
 
 ###############################################################################
-#+begin_src example_output
+#+begin_src static_example_output
 #@ ```
 #@ R: Encrypted file content:
 #@ R: ��Q�������VO�["N߀ �1�}΢n�#��h�J�2�}5���N1m�n�,��E��\����٣��g<F�3A�rH?�`[V,G�\׮�\�5+�m��[[��Y��{�vD|@���䁶X��w
