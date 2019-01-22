@@ -139,7 +139,7 @@ def scp(file, remote, connection=None):
 
 
 def install_package(host, pkg, data):
-    print("Installing '{}' on '{}'".format(pkg, host))
+    print("Installing: '{}' on '{}'".format(pkg, host))
     with connect(host) as connection:
         if ".deb" in pkg:
             ssh_sudo(connection, "dpkg -i {}".format(pkg))
