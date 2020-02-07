@@ -6970,6 +6970,91 @@ static FnCallResult FnCallClassFilterCsv(EvalContext *ctx,
     return (FnCallResult) { FNCALL_SUCCESS, (Rval) { json, RVAL_TYPE_CONTAINER } };
 }
 
+static bool FilterJsonByClass(JsonElement *json, const char *key)
+{
+    assert(json != NULL);
+    assert(key != NULL);
+
+    if (JsonGetElementType(json) != JSON_ELEMENT_TYPE_CONTAINER
+        || JsonGetContainerType(json) != JSON_CONTAINER_TYPE_ARRAY)
+    {
+        Log(LOG_LEVEL_ERR,
+            "classfilterjson() requires a json file with an array - []");
+        return FnFailure();
+    }
+
+    const size_t length = JsonLength(json);
+    int removals = 0;
+    for (int original_index = 0; original_index < length - removals; ++i)
+    {
+        const int index = original_index - removals;
+        JsonElement *element = JsonAt(index);
+        if (JsonGetElementType(element) != JSON_ELEMENT_TYPE_CONTAINER
+            || JsonGetContainerType(element) != JSON_CONTAINER_TYPE_OBJECT)
+        {
+            Log(LOG_LEVEL_ERR,
+                "classfilterjson(): array element %d is not an object - {}",
+                original_index);
+            remove = true;
+        }
+        else
+        {
+            JsonElement *const class_expression = JsonObjectGet(element, key);
+            if (class_expression == NULL)
+            {
+                Log(LOG_LEVEL_ERR,
+                    "classfilterjson(): object at index %d is missing the required key - '%s'",
+                    original_index,
+                    key);
+                remove = true;
+            }
+            else if (JsonElementType(class_expression) != JSON_ELEMENT_TYPE_PRIMITIVE
+        }
+
+        if (remove)
+        {
+            JsonArrayRemoveRange(json, index, index);
+            removals += 1;
+        }
+    }
+}
+
+// classfilterjson(path, key)
+static FnCallResult FnCallClassFilterJson(EvalContext *ctx,
+                                         ARG_UNUSED Policy const *policy,
+                                         FnCall const *fp,
+                                         Rlist const *args)
+{
+    if (args == NULL || args->next == NULL)
+    {
+        FatalError(ctx, "classfilterjson() requires at least 2 arguments");
+    }
+
+    const char *path = RlistScalarValue(args);
+    const char *key = RlistScalarValue(args->next);
+
+    const size_t max = (size_t) -1;
+    const DataFileType type = DATAFILETYPE_JSON;
+
+    JsonElement *const json = JsonReadDataFile(fp->name, path, type, max);
+    if (json == NULL)
+    {
+        return FnFailure();
+    }
+
+    const bool success = FilterJsonByClass(json, key);
+
+    if (!success)
+    {
+        JsonDestroy(json);
+        return FnFailure();
+    }
+
+    const Rval ret = (Rval) { json, RVAL_TYPE_CONTAINER };
+
+    return (FnCallResult) { FNCALL_SUCCESS, ret };
+}
+
 static FnCallResult FnCallParseJson(ARG_UNUSED EvalContext *ctx,
                                     ARG_UNUSED const Policy *policy,
                                     ARG_UNUSED const FnCall *fp,
@@ -9438,6 +9523,8 @@ const FnCallType CF_FNCALL_TYPES[] =
     FnCallTypeNew("classesmatching", CF_DATA_TYPE_STRING_LIST, CLASSMATCH_ARGS, &FnCallClassesMatching, "List the defined classes matching regex arg1 and tag regexes arg2,arg3,...",
                   FNCALL_OPTION_VARARG, FNCALL_CATEGORY_UTILS, SYNTAX_STATUS_NORMAL),
     FnCallTypeNew("classfiltercsv", CF_DATA_TYPE_CONTAINER, CLASSFILTERCSV_ARGS, &FnCallClassFilterCsv, "Parse a CSV file and create data container filtered by defined classes",
+                  FNCALL_OPTION_VARARG, FNCALL_CATEGORY_IO, SYNTAX_STATUS_NORMAL),
+    FnCallTypeNew("classfilterjson", CF_DATA_TYPE_CONTAINER, CLASSFILTERJSON_ARGS, &FnCallClassFilterJson, "Parse a JSON file and create data container filtered by defined classes",
                   FNCALL_OPTION_VARARG, FNCALL_CATEGORY_IO, SYNTAX_STATUS_NORMAL),
     FnCallTypeNew("countclassesmatching", CF_DATA_TYPE_INT, CLASSMATCH_ARGS, &FnCallClassesMatching, "Count the number of defined classes matching regex arg1",
                   FNCALL_OPTION_VARARG, FNCALL_CATEGORY_UTILS, SYNTAX_STATUS_NORMAL),
